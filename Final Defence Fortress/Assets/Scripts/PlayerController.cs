@@ -10,10 +10,14 @@ public class PlayerController : MonoBehaviour {
 
 	//moving
 	public float moveSpeed = 60;
-	public float jumpHeight = 5;
 	public float turnSpeed = 10;
 	public float lookUpSpeed = 10;
-	bool isGrounded;
+
+	//jumping
+	[Range(1, 10)]
+	public float jumpVelocity = 5;
+	public float fallMultiplier = 2.5f;
+	public float lowJumpMultiplier = 2;
 
 	//shooting
 	public GameObject bulletPrefab;
@@ -53,9 +57,15 @@ public class PlayerController : MonoBehaviour {
 
 		//jump
 		CheckGrounded();
-		if (XCI.GetButtonDown(XboxButton.A, controller) && isGrounded == true) {
-			rb.AddForce (Vector3.up * jumpHeight, ForceMode.Impulse);
-			isGrounded = false;
+		if (XCI.GetButtonDown(XboxButton.A, controller) && CheckGrounded()) {
+			rb.velocity = Vector3.up * jumpVelocity;
+		}
+		//if falling, fall faster, else if moving up and not pressing jump start falling
+		if (rb.velocity.y < 0) {
+			rb.velocity += Vector3.up * Physics.gravity.y * (fallMultiplier - 1) * Time.deltaTime;
+		} else if (rb.velocity.y > 0 && !XCI.GetButton(XboxButton.A, controller)) {
+			rb.velocity = Vector3.zero;
+			rb.velocity += Vector3.up * Physics.gravity.y * (lowJumpMultiplier - 1) * Time.deltaTime;
 		}
 
 		//shoot
@@ -63,15 +73,13 @@ public class PlayerController : MonoBehaviour {
 	}
 
 	//return true if raycast hit ground
-	void CheckGrounded() {
-		float rayLength = 1f;
+	bool CheckGrounded() {
+		float rayLength = 1.1f;
 		RaycastHit hit;
 		Ray ray = new Ray(transform.position, -transform.up);
 		Debug.DrawRay(ray.origin, ray.direction * rayLength, Color.red);
 		// if there is something directly below the player
-		if (Physics.Raycast(ray, out hit, rayLength)) {
-			isGrounded = true;
-		}
+		return Physics.Raycast(ray, out hit, rayLength);
 	}
 
 	void FireGun() {
