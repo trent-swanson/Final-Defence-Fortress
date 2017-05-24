@@ -19,6 +19,7 @@ public class BuildingManager : MonoBehaviour {
 	}
 
 	void Update() {
+		//instantiate object and move it around
 		if((XCI.GetAxis(XboxAxis.LeftTrigger) > 0) && !isBuilding) {
 			GameObject GO = Instantiate (woodFloor, Vector3.zero, Quaternion.identity);
 			isBuilding = true;

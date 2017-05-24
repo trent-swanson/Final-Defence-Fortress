@@ -62,6 +62,7 @@ public class BuildObject : MonoBehaviour {
 			Debug.DrawRay(ray.origin, ray.direction * rayLength, Color.yellow);
 			RaycastHit hit;
 			if (Physics.Raycast(ray, out hit, rayLength, layerMask)) {
+				//if look position not == to object position un-snap
 				if (!V3Equal(transform.position, hit.point, 10f)) {
 					isSnapped = false;
 				}
