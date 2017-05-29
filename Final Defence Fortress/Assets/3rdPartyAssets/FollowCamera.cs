@@ -4,6 +4,7 @@ using System.Collections;
 public class FollowCamera : MonoBehaviour {
 	public Transform target;
 	public float distance = 3.0f;
+	public float offset = 0;
 	public float height = 3.0f;
 	public float damping = 5.0f;
 	public bool smoothRotation = true;
@@ -21,6 +22,7 @@ public class FollowCamera : MonoBehaviour {
 		else
 			wantedPosition = target.TransformPoint(0, height, distance);
 
+		//wantedPosition.x += offset;
 		transform.position = wantedPosition;
 
 		if (smoothRotation) {
