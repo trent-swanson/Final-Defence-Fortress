@@ -46,14 +46,18 @@ public class PlayerController : MonoBehaviour {
 		float rotateAxisY = XCI.GetAxis (XboxAxis.RightStickX, controller);
 		float rotateAxisX = XCI.GetAxis (XboxAxis.RightStickY, controller);
 
-		Vector3 turnVector = new Vector3 (0, rotateAxisY, 0);
-		transform.Rotate (turnVector * turnSpeed * Time.deltaTime);
+		if (RadialMenu.radialMenuActive == false) {
+			Vector3 turnVector = new Vector3 (0, rotateAxisY, 0);
+			transform.Rotate (turnVector * turnSpeed * Time.deltaTime);
+		}
 
 		//look up and down
-		Vector3 lookVector = new Vector3 (-rotateAxisX, 0, 0);
-		rotationHolder += lookVector;
-		rotationHolder.x = Mathf.Clamp (rotationHolder.x, -20, 20);
-		transform.GetChild (0).transform.localRotation = Quaternion.Euler(rotationHolder.x, transform.rotation.y, 0);
+		if (RadialMenu.radialMenuActive == false) {
+			Vector3 lookVector = new Vector3 (-rotateAxisX, 0, 0);
+			rotationHolder += lookVector;
+			rotationHolder.x = Mathf.Clamp (rotationHolder.x, -20, 20);
+			transform.GetChild (0).transform.localRotation = Quaternion.Euler(rotationHolder.x, transform.rotation.y, 0);
+		}
 
 		//jump
 		CheckGrounded();
@@ -69,7 +73,9 @@ public class PlayerController : MonoBehaviour {
 		}
 
 		//shoot
-		FireGun ();
+		if (BuildingManager.isBuilding == false) {
+			FireGun ();
+		}
 	}
 
 	//return true if raycast hit ground

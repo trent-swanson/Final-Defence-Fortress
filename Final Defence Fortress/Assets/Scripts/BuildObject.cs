@@ -19,6 +19,8 @@ public class BuildObject : MonoBehaviour {
 	public Color canPlace;
 	public Color cantPlace;
 
+	bool placeTigger = false;
+
 	void Start() {
 		PlayerCameraLookAt = GameObject.FindGameObjectWithTag ("Player").transform.GetChild (0).transform;
 	}
@@ -48,10 +50,15 @@ public class BuildObject : MonoBehaviour {
 		}
 
 		//place object
-		if((XCI.GetAxis(XboxAxis.RightTrigger) > 0) && isSnapped) {
+		if(XCI.GetAxisRaw(XboxAxis.RightTrigger) > 0) {
+			placeTigger = true;
+		}
+		if((XCI.GetAxisRaw(XboxAxis.RightTrigger) == 0) && isSnapped && BuildingManager.isBuilding && placeTigger) {
 			transform.GetChild (1).gameObject.SetActive (false);
 			transform.GetChild (0).gameObject.SetActive (true);
+			placeTigger = false;
 			isPlaced = true;
+			Debug.Log (BuildingManager.isBuilding);
 			BuildingManager.isBuilding = false;
 		}
 
@@ -63,7 +70,7 @@ public class BuildObject : MonoBehaviour {
 			RaycastHit hit;
 			if (Physics.Raycast(ray, out hit, rayLength, layerMask)) {
 				//if look position not == to object position un-snap
-				if (!V3Equal(transform.position, hit.point, 10f)) {
+				if (Vector3.Distance(hit.point,transform.position) > 7f) {
 					isSnapped = false;
 				}
 			}
