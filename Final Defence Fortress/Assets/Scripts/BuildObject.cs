@@ -59,6 +59,10 @@ public class BuildObject : MonoBehaviour {
 			placeTigger = false;
 			isPlaced = true;
 			Debug.Log (BuildingManager.isBuilding);
+			//I want to place the object on right trigger up
+			//if isBuilding not set to false, works fine, but radial menu does not reset
+			//if isBuilding is set to false then the object wont place (turn off/on child 1 and 0) until I move the object away and back again
+			//relevent scripts include BuildingManager.cs and RadialMenu.cs
 			BuildingManager.isBuilding = false;
 		}
 
