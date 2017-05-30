@@ -6,56 +6,94 @@ using UnityEngine.UI;
 
 public class BuildingManager : MonoBehaviour {
 
-	public XboxController controller;
+	//a LayerMask object
 	public LayerMask layerMask;
 
-	public static bool isBuilding;
-
+	//references to building set objects
 	public GameObject floorPrefab;
 	public GameObject wallPrefab;
 	public GameObject trapPrefab;
 	public GameObject turretPrefab;
 
-	Transform PlayerCameraLookAt;
+	//refrences to PlayerLookAt transforms
+	Transform PlayerLookAt1;
+	Transform PlayerLookAt2;
 
+	//--------------------------------------------------------------------------------------
+	//	Start()
+	// Runs during initialisation
+	//
+	// Param:
+	//		None
+	// Return:
+	//		Void
+	//--------------------------------------------------------------------------------------
 	void Start() {
-		PlayerCameraLookAt = GameObject.FindGameObjectWithTag ("Player").transform.GetChild (0).transform;
+		PlayerLookAt1 = GameObject.FindGameObjectWithTag ("Player1").transform.GetChild (0).GetChild(0).GetChild(0).transform.parent.parent.parent;
+		PlayerLookAt2 = GameObject.FindGameObjectWithTag ("Player2").transform.GetChild (0).GetChild(0).GetChild(0).transform.parent.parent.parent;
 	}
 
-	public void InstantiateObject(GameObject prefab) {
+	//--------------------------------------------------------------------------------------
+	//	InstantiateObject()
+	// Check which player called function, spawn prefab object at location of raycast hit
+	// from player that called function
+	//
+	// Param:
+	//		GameObject prefab - prefab to instantiate, int playerNumber - which player called function		
+	// Return:
+	//		Void
+	//--------------------------------------------------------------------------------------
+	public void InstantiateObject(GameObject prefab, int playerNumber) {
 		//instantiate object
-		if(isBuilding) {
+		if (playerNumber == 1) {
 			GameObject GO = Instantiate (prefab, Vector3.zero, Quaternion.identity);
-			Debug.Log (GO.name);
-			Ray ray = new Ray(PlayerCameraLookAt.position, PlayerCameraLookAt.forward);
+			GO.transform.SetParent (transform);
+			GO.GetComponent<BuildObject> ().playerNumber = playerNumber;
+			Ray ray = new Ray(PlayerLookAt1.position, PlayerLookAt1.forward);
 			RaycastHit hit;
-			if (Physics.Raycast(ray, out hit, 10, layerMask)) {
-				GO.transform.position = new Vector3 (hit.point.x, hit.point.y, hit.point.z);
+			if (Physics.Raycast(ray, out hit, 50, layerMask)) {
+				GO.transform.position = new Vector3 (hit.point.x, hit.point.y + (GO.GetComponent<BoxCollider>().bounds.size.y / 2), hit.point.z);
+			}
+		} else if (playerNumber == 2) {
+			GameObject GO = Instantiate (prefab, Vector3.zero, Quaternion.identity);
+			GO.transform.SetParent (transform);
+			GO.GetComponent<BuildObject> ().playerNumber = playerNumber;
+			Ray ray = new Ray(PlayerLookAt2.position, PlayerLookAt2.forward);
+			RaycastHit hit;
+			if (Physics.Raycast(ray, out hit, 50, layerMask)) {
+				GO.transform.position = new Vector3 (hit.point.x, hit.point.y + (GO.GetComponent<BoxCollider>().bounds.size.y / 2), hit.point.z);
 			}
 		}
+
 	}
 
-	public void BuildObject(int menuOption) {
+	//--------------------------------------------------------------------------------------
+	//	BuildObject()
+	// Call InstantiateObject() passing a building set object decided by menuOption
+	//
+	// Param:
+	//		int menuOption - menu option selected, int playerNumber - index of player that called function	
+	// Return:
+	//		Void
+	//--------------------------------------------------------------------------------------
+	public void BuildObject(int menuOption, int playerNumber) {
+
 		switch (menuOption) {
 		case 1:
 			//open trap menu
-			isBuilding = true;
-			InstantiateObject(trapPrefab);
+			//InstantiateObject(trapPrefab, controller);
 			break;
 		case 2:
 			//open wall menu
-			isBuilding = true;
-			InstantiateObject(wallPrefab);
+			InstantiateObject(wallPrefab, playerNumber);
 			break;
 		case 3:
 			//open floor menu
-			isBuilding = true;
-			InstantiateObject(floorPrefab);
+			InstantiateObject(floorPrefab, playerNumber);
 			break;
 		case 4:
 			//open turret menu
-			isBuilding = true;
-			InstantiateObject(turretPrefab);
+			//InstantiateObject(turretPrefab, controller);
 			break;
 		}
 	}

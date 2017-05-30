@@ -52,7 +52,7 @@ public class XInputTestCS : MonoBehaviour
         GamePad.SetVibration(playerIndex, state.Triggers.Left, state.Triggers.Right);
 
         // Make the current object turn
-        transform.localRotation *= Quaternion.Euler(0.0f, state.ThumbSticks.Left.X * 25.0f * Time.deltaTime, 0.0f);
+        transform.parent.parent.parent.localRotation *= Quaternion.Euler(0.0f, state.ThumbSticks.Left.X * 25.0f * Time.deltaTime, 0.0f);
     }
 
     void OnGUI()

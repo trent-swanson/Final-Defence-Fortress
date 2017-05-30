@@ -15,8 +15,8 @@ public class MoveLaser : MonoBehaviour
 	// Update is called once per frame
 	void Update () 
 	{
-		newPosition = transform.position;
-		newPosition = transform.position + transform.forward * speed * Time.deltaTime;
-		transform.position = newPosition;
+		newPosition = transform.parent.parent.parent.position;
+		newPosition = transform.parent.parent.parent.position + transform.parent.parent.parent.forward * speed * Time.deltaTime;
+		transform.parent.parent.parent.position = newPosition;
 	}
 }

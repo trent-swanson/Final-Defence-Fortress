@@ -47,7 +47,7 @@ public class MovePlayer : MonoBehaviour
 		}
 
 
-		newPosition = transform.position;
+		newPosition = transform.parent.parent.parent.position;
 		
 		if(!didQueryNumOfCtrlrs)
 		{
@@ -101,44 +101,44 @@ public class MovePlayer : MonoBehaviour
 		{
 			if(XCI.GetButton(XboxButton.A, controller))
 			{
-				Instantiate(laserAPrefab, transform.position, laserAPrefab.transform.rotation);
+				Instantiate(laserAPrefab, transform.parent.parent.parent.position, laserAPrefab.transform.rotation);
 				bulletTimer = MAX_BUL_TME;
 			}
 			if(XCI.GetButton(XboxButton.B, controller))
 			{
-				Instantiate(laserBPrefab, transform.position, laserBPrefab.transform.rotation);
+				Instantiate(laserBPrefab, transform.parent.parent.parent.position, laserBPrefab.transform.rotation);
 				bulletTimer = MAX_BUL_TME;
 			}
 			if(XCI.GetButton(XboxButton.X, controller))
 			{
-				Instantiate(laserXPrefab, transform.position, laserXPrefab.transform.rotation);
+				Instantiate(laserXPrefab, transform.parent.parent.parent.position, laserXPrefab.transform.rotation);
 				bulletTimer = MAX_BUL_TME;
 			}
 			if(XCI.GetButton(XboxButton.Y, controller))
 			{
-				Instantiate(laserYPrefab, transform.position, laserYPrefab.transform.rotation);
+				Instantiate(laserYPrefab, transform.parent.parent.parent.position, laserYPrefab.transform.rotation);
 				bulletTimer = MAX_BUL_TME;
 			}
 		}
 		
 		// Left stick movement
-		newPosition = transform.position;
+		newPosition = transform.parent.parent.parent.position;
 		float axisX = XCI.GetAxis(XboxAxis.LeftStickX, controller);
 		float axisY = XCI.GetAxis(XboxAxis.LeftStickY, controller);
 		float newPosX = newPosition.x + (axisX * maxMoveSpeed * Time.deltaTime);
 		float newPosZ = newPosition.z + (axisY * maxMoveSpeed * Time.deltaTime);
-		newPosition = new Vector3(newPosX, transform.position.y, newPosZ);
-		transform.position = newPosition;
+		newPosition = new Vector3(newPosX, transform.parent.parent.parent.position.y, newPosZ);
+		transform.parent.parent.parent.position = newPosition;
 		
 		
 		// Right stick movement
-		newPosition = transform.position;
+		newPosition = transform.parent.parent.parent.position;
 		axisX = XCI.GetAxis(XboxAxis.RightStickX, controller);
 		axisY = XCI.GetAxis(XboxAxis.RightStickY, controller);
 		newPosX = newPosition.x + (axisX * maxMoveSpeed * 0.3f * Time.deltaTime);
 		newPosZ = newPosition.z + (axisY * maxMoveSpeed * 0.3f * Time.deltaTime);
-		newPosition = new Vector3(newPosX, transform.position.y, newPosZ);
-		transform.position = newPosition;
+		newPosition = new Vector3(newPosX, transform.parent.parent.parent.position.y, newPosZ);
+		transform.parent.parent.parent.position = newPosition;
 		
 		
 		// D-Pad testing
@@ -162,7 +162,7 @@ public class MovePlayer : MonoBehaviour
 		{
 			if(XCI.GetDPad(XboxDPad.Up, controller))
 			{
-				bulletReference = Instantiate(laserBumpPrefab, transform.position, laserYPrefab.transform.rotation) as GameObject;
+				bulletReference = Instantiate(laserBumpPrefab, transform.parent.parent.parent.position, laserYPrefab.transform.rotation) as GameObject;
 				bulletReference.transform.localScale = new Vector3(0.1f, 0.1f, 1.0f);
 				dpUpBulletTimer = MAX_BUL_TME * 2;
 			}
@@ -171,7 +171,7 @@ public class MovePlayer : MonoBehaviour
 		{
 			if(XCI.GetDPad(XboxDPad.Down, controller))
 			{
-				bulletReference = Instantiate(laserBumpPrefab, transform.position, laserAPrefab.transform.rotation) as GameObject;
+				bulletReference = Instantiate(laserBumpPrefab, transform.parent.parent.parent.position, laserAPrefab.transform.rotation) as GameObject;
 				bulletReference.transform.localScale = new Vector3(0.1f, 0.1f, 1.0f);
 				dpDownBulletTimer = MAX_BUL_TME * 2;
 			}
@@ -180,7 +180,7 @@ public class MovePlayer : MonoBehaviour
 		{
 			if(XCI.GetDPad(XboxDPad.Left, controller))
 			{
-				bulletReference = Instantiate(laserBumpPrefab, transform.position, laserXPrefab.transform.rotation) as GameObject;
+				bulletReference = Instantiate(laserBumpPrefab, transform.parent.parent.parent.position, laserXPrefab.transform.rotation) as GameObject;
 				bulletReference.transform.localScale = new Vector3(0.1f, 0.1f, 1.0f);
 				dpLeftBulletTimer = MAX_BUL_TME * 2;
 			}
@@ -189,7 +189,7 @@ public class MovePlayer : MonoBehaviour
 		{
 			if(XCI.GetDPad(XboxDPad.Right, controller))
 			{
-				bulletReference = Instantiate(laserBumpPrefab, transform.position, laserBPrefab.transform.rotation) as GameObject;
+				bulletReference = Instantiate(laserBumpPrefab, transform.parent.parent.parent.position, laserBPrefab.transform.rotation) as GameObject;
 				bulletReference.transform.localScale = new Vector3(0.1f, 0.1f, 1.0f);
 				dpRightBulletTimer = MAX_BUL_TME * 2;
 			}
@@ -270,7 +270,7 @@ public class MovePlayer : MonoBehaviour
 		
 		Gizmos.color = new Color(Gizmos.color.r, Gizmos.color.g, Gizmos.color.b, 0.5f);
 		
-		Gizmos.DrawCube(transform.position, new Vector3(1.2f, 1.2f, 1.2f));
+		Gizmos.DrawCube(transform.parent.parent.parent.position, new Vector3(1.2f, 1.2f, 1.2f));
 	}
 	
 }
