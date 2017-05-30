@@ -300,10 +300,10 @@ public class PlayerController : MonoBehaviour {
 			currentMenuOption = 0;
 		}
 
-		if(XCI.GetAxisRaw(XboxAxis.RightTrigger) > 0) {
+		if(XCI.GetAxisRaw(XboxAxis.RightTrigger, controller) > 0) {
 			triggerUp = true;
 		}
-		if((XCI.GetAxisRaw(XboxAxis.RightTrigger) == 0) && triggerUp) {
+		if((XCI.GetAxisRaw(XboxAxis.RightTrigger, controller) == 0) && triggerUp) {
 			triggerUp = false;
 			if (onPlace != null) {
 				onPlace ();
