@@ -94,6 +94,9 @@ public class PlayerController : MonoBehaviour {
 	//onPlace is an event called when place object button is pressed
 	public delegate void OnPlaced();
 	public static event OnPlaced onPlace;
+	//onExit is an event called when exiting the placing state
+	public delegate void OnExited();
+	public static event OnExited onExit;
 
 	//--------------------------------------------------------------------------------------
 	//	Start()
@@ -300,6 +303,11 @@ public class PlayerController : MonoBehaviour {
 			currentMenuOption = 0;
 		}
 
+		if(XCI.GetButtonDown(XboxButton.B)) {
+			if (onExit != null) {
+				onExit ();
+			}
+		}
 		if(XCI.GetAxisRaw(XboxAxis.RightTrigger, controller) > 0) {
 			triggerUp = true;
 		}

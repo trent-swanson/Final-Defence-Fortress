@@ -46,6 +46,7 @@ public class BuildObject : MonoBehaviour {
 	void OnEnable()
 	{
 		PlayerController.onPlace += PlaceObject;
+		PlayerController.onExit += ExitPlaceObject;
 	}
 
 	//--------------------------------------------------------------------------------------
@@ -60,6 +61,7 @@ public class BuildObject : MonoBehaviour {
 	void OnDisable()
 	{
 		PlayerController.onPlace -= PlaceObject;
+		PlayerController.onExit -= ExitPlaceObject;
 	}
 
 	//--------------------------------------------------------------------------------------
@@ -109,6 +111,30 @@ public class BuildObject : MonoBehaviour {
 				PlayerController player = GameObject.FindGameObjectWithTag ("Player2").GetComponent<PlayerController> ();
 				player.playerState = PlayerController.state.Placing;
 			}
+		}
+	}
+
+	//--------------------------------------------------------------------------------------
+	//	ExitPlaceObject()
+	// Exit placing object and return to not building state
+	//
+	// Param:
+	//		None
+	// Return:
+	//		Void
+	//--------------------------------------------------------------------------------------
+	void ExitPlaceObject() {
+		if(!isPlaced) {
+			if (playerNumber == 1) {
+				PlayerController player = GameObject.FindGameObjectWithTag ("Player1").GetComponent<PlayerController> ();
+				player.playerState = PlayerController.state.NotBuilding;
+				PlayerController.isBuilding = false;
+			} else if (playerNumber == 2) {
+				PlayerController player = GameObject.FindGameObjectWithTag ("Player2").GetComponent<PlayerController> ();
+				player.playerState = PlayerController.state.NotBuilding;
+				PlayerController.isBuilding = false;
+			}
+			Destroy (this.gameObject);
 		}
 	}
 

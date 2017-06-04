@@ -17,9 +17,9 @@ public class Bullet : MonoBehaviour {
 	//		Void
 	//--------------------------------------------------------------------------------------
 	void OnTriggerEnter(Collider other) {
-		/*if (other.tag == "Enemy") {
-			other.GetComponent<Enemy> ().TakeDamage (damage);
-			Destroy (this.gameObject);
-		} */
+		if (other.tag == "Enemy") {
+			other.GetComponent<Enemy> ().TakeDamage ();
+		}
+		Destroy (this.gameObject);
 	}
 }
