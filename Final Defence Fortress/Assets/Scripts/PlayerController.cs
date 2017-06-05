@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using XboxCtrlrInput;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour {
+
+	float playerHealth = 100;
 
 	//rb is a reference to the player's Rigidbody component
 	public Rigidbody rb;
@@ -79,6 +82,8 @@ public class PlayerController : MonoBehaviour {
 	bool triggerUp;
 	//bool check if currently building
 	public static bool isBuilding = false;
+	//bool check if we can open build menu
+	public static bool canOpenBuildMenu = true;
 
 	//Player states
 	//enum of player states
@@ -149,7 +154,7 @@ public class PlayerController : MonoBehaviour {
 		}
 
 		//Open building menu
-		if ((XCI.GetAxis(XboxAxis.LeftTrigger, controller) > 0) && !isBuilding) {
+		if ((XCI.GetAxis(XboxAxis.LeftTrigger, controller) > 0) && !isBuilding && canOpenBuildMenu) {
 			playerState = state.Selecting;
 		}
 	}
@@ -345,6 +350,24 @@ public class PlayerController : MonoBehaviour {
 			PlayerTurn ();
 			Placing ();
 			break;
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------
+	//	TakeDamage()
+	// lose health
+	//
+	// Param:
+	//		damage - how much health to lose
+	// Return:
+	//		Void
+	//--------------------------------------------------------------------------------------
+	public void TakeDamage(int damage) {
+		playerHealth -= damage;
+		if(playerHealth <= 0) {
+			Debug.Log (gameObject.name + " died, end game");
+			SceneManager.LoadScene ("MainMenu");
 		}
 	}
 }

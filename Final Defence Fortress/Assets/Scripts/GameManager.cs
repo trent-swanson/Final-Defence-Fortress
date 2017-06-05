@@ -12,6 +12,7 @@ public class GameManager : MonoBehaviour {
 	public Grid grid;
 
 	WaveSpawner waveSpawner;
+	public static bool isBuildMode = true;
 
 	void Start() {
 		waveSpawner = GetComponent<WaveSpawner> ();
@@ -28,9 +29,12 @@ public class GameManager : MonoBehaviour {
 		if (buildModeTimer <= 0) {
 			buildModeTimerBar.fillAmount = 1;
 			buildModeTimerBar.color = new Color32(163, 17, 0, 255); 
-			buildModeTimerBar.transform.GetChild(0).GetComponent<Text>().text = "Wave Mode";
-			grid.SetGridActive ();
-			waveSpawner.TurnOnWaveSpawner ();
+			PlayerController.canOpenBuildMenu = false;
+			if(isBuildMode && !PlayerController.isBuilding) {
+				isBuildMode = false;
+				//grid.SetGridActive ();
+				waveSpawner.TurnOnWaveSpawner ();
+			}
 		}
 	}
 }

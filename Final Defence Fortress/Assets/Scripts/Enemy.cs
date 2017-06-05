@@ -1,8 +1,11 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
-public class Enemy : Unit {
+public class Enemy : MonoBehaviour {
+
+	protected NavMeshAgent agent;
 
 	public int health = 100;
 	public int damage = 50;
