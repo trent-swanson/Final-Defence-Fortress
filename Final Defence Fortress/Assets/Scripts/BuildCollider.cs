@@ -138,7 +138,7 @@ public class BuildCollider : MonoBehaviour {
 	//--------------------------------------------------------------------------------------
 	void OnTriggerStay(Collider other) {
 		//disable collider if placed object is adjacent
-		if(other.tag == "Building" && other.GetComponent<BuildObject>().isPlaced && other.GetComponent<BuildObject>().objectType == BuildObject.enumObjectType.floor || other.GetComponent<BuildObject>().objectType == BuildObject.enumObjectType.stair) {
+		if((other.tag == "Building" && other.GetComponent<BuildObject>().isPlaced && other.GetComponent<BuildObject>().objectType == BuildObject.enumObjectType.floor) || (other.tag == "Building" && other.GetComponent<BuildObject>().isPlaced && other.GetComponent<BuildObject>().objectType == BuildObject.enumObjectType.stair)) {
 			gameObject.SetActive (false);
 		}
 	}
