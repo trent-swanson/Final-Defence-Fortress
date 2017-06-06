@@ -12,6 +12,7 @@ public class BuildingManager : MonoBehaviour {
 	//references to building set objects
 	public GameObject floorPrefab;
 	public GameObject wallPrefab;
+	public GameObject stairPrefab;
 	public GameObject trapPrefab;
 	public GameObject turretPrefab;
 
@@ -92,8 +93,8 @@ public class BuildingManager : MonoBehaviour {
 			InstantiateObject(floorPrefab, playerNumber);
 			break;
 		case 4:
-			//open turret menu
-			//InstantiateObject(turretPrefab, controller);
+			//open stair menu
+			InstantiateObject(stairPrefab, playerNumber);
 			break;
 		}
 	}

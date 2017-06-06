@@ -49,6 +49,11 @@ public class BuildCollider : MonoBehaviour {
 					other.transform.position = new Vector3 (buildingParentTransform.position.x + sizeX, buildingParentTransform.position.y, buildingParentTransform.position.z);
 					other.GetComponent<BuildObject> ().isSnapped = true;
 				}
+				if (otherBuildObject.objectType == BuildObject.enumObjectType.stair) {
+					other.transform.position = new Vector3 (buildingParentTransform.position.x + sizeX, buildingParentTransform.position.y + 3, buildingParentTransform.position.z);
+					other.transform.eulerAngles = new Vector3 (0, -90, 0);
+					other.GetComponent<BuildObject> ().isSnapped = true;
+				}
 				if (otherBuildObject.objectType == BuildObject.enumObjectType.wall) {
 					if (buildingParentTransform.GetChild(0).GetChild(1).GetChild(0).GetComponent<WallPoint>().hasWall == false) {
 						other.transform.position = buildingParentTransform.GetChild(0).GetChild(1).GetChild(0).transform.position;
@@ -60,6 +65,11 @@ public class BuildCollider : MonoBehaviour {
 			case "WestCollider":
 				if (otherBuildObject.objectType == BuildObject.enumObjectType.floor) {
 					other.transform.position = new Vector3 (buildingParentTransform.position.x - sizeX, buildingParentTransform.position.y, buildingParentTransform.position.z);
+					other.GetComponent<BuildObject> ().isSnapped = true;
+				}
+				if (otherBuildObject.objectType == BuildObject.enumObjectType.stair) {
+					other.transform.position = new Vector3 (buildingParentTransform.position.x + sizeX, buildingParentTransform.position.y + 3, buildingParentTransform.position.z);
+					other.transform.eulerAngles = new Vector3 (0, 90, 0);
 					other.GetComponent<BuildObject> ().isSnapped = true;
 				}
 				if (otherBuildObject.objectType == BuildObject.enumObjectType.wall) {
@@ -75,6 +85,11 @@ public class BuildCollider : MonoBehaviour {
 					other.transform.position = new Vector3 (buildingParentTransform.position.x, buildingParentTransform.position.y, buildingParentTransform.position.z + sizeZ);
 					other.GetComponent<BuildObject> ().isSnapped = true;
 				}
+				if (otherBuildObject.objectType == BuildObject.enumObjectType.stair) {
+					other.transform.position = new Vector3 (buildingParentTransform.position.x + sizeX, buildingParentTransform.position.y + 3, buildingParentTransform.position.z);
+					other.transform.eulerAngles = new Vector3 (0, 180, 0);
+					other.GetComponent<BuildObject> ().isSnapped = true;
+				}
 				if (otherBuildObject.objectType == BuildObject.enumObjectType.wall) {
 					if (buildingParentTransform.GetChild(0).GetChild(1).GetChild(2).GetComponent<WallPoint>().hasWall == false) {
 						other.transform.position = buildingParentTransform.GetChild(0).GetChild(1).GetChild(2).transform.position;
@@ -88,6 +103,11 @@ public class BuildCollider : MonoBehaviour {
 					other.transform.position = new Vector3 (buildingParentTransform.position.x, buildingParentTransform.position.y, buildingParentTransform.position.z - sizeZ);
 					other.GetComponent<BuildObject> ().isSnapped = true;
 				}
+				if (otherBuildObject.objectType == BuildObject.enumObjectType.stair) {
+					other.transform.position = new Vector3 (buildingParentTransform.position.x + sizeX, buildingParentTransform.position.y + 3, buildingParentTransform.position.z);
+					other.transform.eulerAngles = new Vector3 (0, 0, 0);
+					other.GetComponent<BuildObject> ().isSnapped = true;
+				}
 				if (otherBuildObject.objectType == BuildObject.enumObjectType.wall) {
 					if (buildingParentTransform.GetChild(0).GetChild(1).GetChild(3).GetComponent<WallPoint>().hasWall == false) {
 						other.transform.position = buildingParentTransform.GetChild(0).GetChild(1).GetChild(3).transform.position;
@@ -96,18 +116,10 @@ public class BuildCollider : MonoBehaviour {
 					}
 				}
 				break;
-			case "UpCollider":
-				other.transform.position = new Vector3 (buildingParentTransform.position.x, buildingParentTransform.position.y + sizeY, buildingParentTransform.position.z);
-				other.GetComponent<BuildObject> ().isSnapped = true;
-				break;
-			case "DownCollider":
-				other.transform.position = new Vector3 (buildingParentTransform.position.x, buildingParentTransform.position.y - sizeY, buildingParentTransform.position.z);
-				other.GetComponent<BuildObject> ().isSnapped = true;
-				break;
 			case "WallColliderUp":
 				if (otherBuildObject.objectType == BuildObject.enumObjectType.floor) {
-					other.transform.rotation = buildingParentTransform.rotation;
-					other.transform.position = new Vector3 (buildingParentTransform.position.x, buildingParentTransform.position.y + ((sizeOfObject.y / 2) + 0.2f), buildingParentTransform.localPosition.y + (other.GetComponent<BoxCollider>().bounds.size.z / 2));
+					other.transform.position = buildingParentTransform.GetChild(0).GetChild(1).transform.position;
+					other.transform.rotation = buildingParentTransform.GetChild(0).GetChild(1).transform.rotation;
 					other.GetComponent<BuildObject> ().isSnapped = true;
 				}
 				break;
@@ -126,7 +138,7 @@ public class BuildCollider : MonoBehaviour {
 	//--------------------------------------------------------------------------------------
 	void OnTriggerStay(Collider other) {
 		//disable collider if placed object is adjacent
-		if(other.tag == "Building" && other.GetComponent<BuildObject>().isPlaced && other.GetComponent<BuildObject>().objectType == BuildObject.enumObjectType.floor) {
+		if(other.tag == "Building" && other.GetComponent<BuildObject>().isPlaced && other.GetComponent<BuildObject>().objectType == BuildObject.enumObjectType.floor || other.GetComponent<BuildObject>().objectType == BuildObject.enumObjectType.stair) {
 			gameObject.SetActive (false);
 		}
 	}

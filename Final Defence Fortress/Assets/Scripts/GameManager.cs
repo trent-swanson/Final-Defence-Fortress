@@ -30,7 +30,9 @@ public class GameManager : MonoBehaviour {
 			buildModeTimerBar.fillAmount = 1;
 			buildModeTimerBar.color = new Color32(163, 17, 0, 255); 
 			PlayerController.canOpenBuildMenu = false;
-			if(isBuildMode && !PlayerController.isBuilding) {
+			PlayerController player1 = GameObject.FindGameObjectWithTag ("Player1").GetComponent<PlayerController> ();
+			PlayerController player2 = GameObject.FindGameObjectWithTag ("Player2").GetComponent<PlayerController> ();
+			if(isBuildMode && !player1.isBuilding && !player2.isBuilding) {
 				isBuildMode = false;
 				//grid.SetGridActive ();
 				waveSpawner.TurnOnWaveSpawner ();

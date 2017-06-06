@@ -81,7 +81,7 @@ public class PlayerController : MonoBehaviour {
 	//bool check if released trigger button
 	bool triggerUp;
 	//bool check if currently building
-	public static bool isBuilding = false;
+	public bool isBuilding = false;
 	//bool check if we can open build menu
 	public static bool canOpenBuildMenu = true;
 
@@ -93,14 +93,14 @@ public class PlayerController : MonoBehaviour {
 
 	//player index
 	[HideInInspector]
-	public int playerNumber;
+	public int playerID;
 
 	//Events
 	//onPlace is an event called when place object button is pressed
-	public delegate void OnPlaced();
+	public delegate void OnPlaced(int p_ID);
 	public static event OnPlaced onPlace;
 	//onExit is an event called when exiting the placing state
-	public delegate void OnExited();
+	public delegate void OnExited(int p_ID);
 	public static event OnExited onExit;
 
 	//--------------------------------------------------------------------------------------
@@ -113,13 +113,21 @@ public class PlayerController : MonoBehaviour {
 	//		Void
 	//--------------------------------------------------------------------------------------
 	void Start() {
+		if (controller == XboxController.First) {
+			playerID = 1;
+		} else {
+			if (controller == XboxController.Second) {
+				playerID = 2;
+			}
+		}
+		Debug.Log(playerID);
 		rb = GetComponent<Rigidbody> ();
 		rotationHolder = transform.GetChild (0).rotation.eulerAngles;
 		buildingManager = GameObject.FindGameObjectWithTag ("BuildingManager").GetComponent<BuildingManager>();
 		if (controller == XboxController.First) {
-			playerNumber = 1;
+			playerID = 1;
 		} else if (controller == XboxController.Second) {
-			playerNumber = 2;
+			playerID = 2;
 		}
 	}
 
@@ -179,7 +187,7 @@ public class PlayerController : MonoBehaviour {
 		//look up and down
 		Vector3 lookVector = new Vector3 (-rotateAxisX, 0, 0);
 		rotationHolder += lookVector;
-		rotationHolder.x = Mathf.Clamp (rotationHolder.x, -20, 20);
+		rotationHolder.x = Mathf.Clamp (rotationHolder.x, -26, 26);
 		transform.GetChild (0).transform.localRotation = Quaternion.Euler(rotationHolder.x, transform.rotation.y, 0);
 	}
 
@@ -298,19 +306,19 @@ public class PlayerController : MonoBehaviour {
 	//		Void
 	//--------------------------------------------------------------------------------------
 	void Placing() {
-		if (currentMenuOption == 4 || currentMenuOption == 1) {
+		if (currentMenuOption == 1) {
 			Debug.Log("No Trap or Turret Yet!");
 			playerState = state.NotBuilding;
 			return;
 		} else if (!isBuilding) {
 			isBuilding = true;
-			buildingManager.BuildObject (currentMenuOption, playerNumber);
+			buildingManager.BuildObject (currentMenuOption, playerID);
 			currentMenuOption = 0;
 		}
 
-		if(XCI.GetButtonDown(XboxButton.B)) {
+		if(XCI.GetButtonDown(XboxButton.B, controller)) {
 			if (onExit != null) {
-				onExit ();
+				onExit (playerID);
 			}
 		}
 		if(XCI.GetAxisRaw(XboxAxis.RightTrigger, controller) > 0) {
@@ -319,7 +327,7 @@ public class PlayerController : MonoBehaviour {
 		if((XCI.GetAxisRaw(XboxAxis.RightTrigger, controller) == 0) && triggerUp) {
 			triggerUp = false;
 			if (onPlace != null) {
-				onPlace ();
+				onPlace (playerID);
 			}
 		}
 	}

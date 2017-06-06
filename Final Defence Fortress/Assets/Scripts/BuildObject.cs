@@ -9,7 +9,7 @@ public class BuildObject : MonoBehaviour {
 	public LayerMask layerMask;
 
 	//enum of building set object types
-	public enum enumObjectType {floor, wall, roof, trap, turret};
+	public enum enumObjectType {floor, wall, roof, trap, turret, stair};
 	//enum object of objectType
 	public enumObjectType objectType;
 
@@ -87,29 +87,33 @@ public class BuildObject : MonoBehaviour {
 	// Return:
 	//		Void
 	//--------------------------------------------------------------------------------------
-	void PlaceObject() {
+	void PlaceObject(int p_ID) {
 		//place object
-		if (isSnapped) {
-			transform.GetChild (1).gameObject.SetActive (false);
-			transform.GetChild (0).gameObject.SetActive (true);
-			isPlaced = true;
-			PlayerController.isBuilding = false;
-			if (playerNumber == 1) {
-				PlayerController player = GameObject.FindGameObjectWithTag ("Player1").GetComponent<PlayerController> ();
-				player.playerState = PlayerController.state.NotBuilding;
-			} else if (playerNumber == 2) {
-				PlayerController player = GameObject.FindGameObjectWithTag ("Player2").GetComponent<PlayerController> ();
-				player.playerState = PlayerController.state.NotBuilding;
+		if (playerNumber == p_ID) {
+			if (isSnapped) {
+				transform.GetChild (1).gameObject.SetActive (false);
+				transform.GetChild (0).gameObject.SetActive (true);
+				isPlaced = true;
+				if (playerNumber == 1) {
+					PlayerController player = GameObject.FindGameObjectWithTag ("Player1").GetComponent<PlayerController> ();
+					player.playerState = PlayerController.state.NotBuilding;
+					player.isBuilding = false;
+				} else if (playerNumber == 2) {
+					PlayerController player = GameObject.FindGameObjectWithTag ("Player2").GetComponent<PlayerController> ();
+					player.playerState = PlayerController.state.NotBuilding;
+					player.isBuilding = false;
+				}
 			}
-		}
-		else {
-			PlayerController.isBuilding = true;
-			if (playerNumber == 1) {
-				PlayerController player = GameObject.FindGameObjectWithTag ("Player1").GetComponent<PlayerController> ();
-				player.playerState = PlayerController.state.Placing;
-			} else if (playerNumber == 2) {
-				PlayerController player = GameObject.FindGameObjectWithTag ("Player2").GetComponent<PlayerController> ();
-				player.playerState = PlayerController.state.Placing;
+			else {
+				if (playerNumber == 1) {
+					PlayerController player = GameObject.FindGameObjectWithTag ("Player1").GetComponent<PlayerController> ();
+					player.playerState = PlayerController.state.Placing;
+					player.isBuilding = true;
+				} else if (playerNumber == 2) {
+					PlayerController player = GameObject.FindGameObjectWithTag ("Player2").GetComponent<PlayerController> ();
+					player.playerState = PlayerController.state.Placing;
+					player.isBuilding = true;
+				}
 			}
 		}
 	}
@@ -123,16 +127,16 @@ public class BuildObject : MonoBehaviour {
 	// Return:
 	//		Void
 	//--------------------------------------------------------------------------------------
-	void ExitPlaceObject() {
+	void ExitPlaceObject(int p_ID) {
 		if(!isPlaced) {
-			if (playerNumber == 1) {
+			if (playerNumber == 1 && p_ID == 1) {
 				PlayerController player = GameObject.FindGameObjectWithTag ("Player1").GetComponent<PlayerController> ();
 				player.playerState = PlayerController.state.NotBuilding;
-				PlayerController.isBuilding = false;
-			} else if (playerNumber == 2) {
+				player.isBuilding = false;
+			} else if (playerNumber == 2 && p_ID == 2) {
 				PlayerController player = GameObject.FindGameObjectWithTag ("Player2").GetComponent<PlayerController> ();
 				player.playerState = PlayerController.state.NotBuilding;
-				PlayerController.isBuilding = false;
+				player.isBuilding = false;
 			}
 			Destroy (this.gameObject);
 		}
@@ -194,9 +198,21 @@ public class BuildObject : MonoBehaviour {
 
 			//can place colour change
 			if (isSnapped) {
-				transform.GetChild (1).GetComponent<Renderer> ().material.color = canPlace;
+				if (objectType == enumObjectType.stair) {
+					transform.GetChild (1).GetChild(0).GetComponent<Renderer> ().material.color = canPlace;
+					transform.GetChild (1).GetChild(1).GetComponent<Renderer> ().material.color = canPlace;
+					transform.GetChild (1).GetChild(2).GetComponent<Renderer> ().material.color = canPlace;
+				} else {
+					transform.GetChild (1).GetComponent<Renderer> ().material.color = canPlace;
+				}
 			} else {
-				transform.GetChild (1).GetComponent<Renderer> ().material.color = cantPlace;
+				if (objectType == enumObjectType.stair) {
+					transform.GetChild (1).GetChild(0).GetComponent<Renderer> ().material.color = cantPlace;
+					transform.GetChild (1).GetChild(1).GetComponent<Renderer> ().material.color = cantPlace;
+					transform.GetChild (1).GetChild(2).GetComponent<Renderer> ().material.color = cantPlace;
+				} else {
+					transform.GetChild (1).GetComponent<Renderer> ().material.color = cantPlace;
+				}
 			}
 		}
 	}
