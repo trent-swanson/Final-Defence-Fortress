@@ -27,7 +27,7 @@ public class FloorSpike : MonoBehaviour {
 	}
 
 	void OnTriggerEnter(Collider other) {
-		if (other.tag == "Player1" && canFire) {
+		if (other.tag == "Enemy" && canFire) {
 			canFire = false;
 			StartCoroutine (FireSpikes ());
 		}
