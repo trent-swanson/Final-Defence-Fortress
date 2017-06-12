@@ -7,13 +7,23 @@ using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour {
 
-	float playerHealth = 100;
+	public GameObject marker;
+
+	[Header("Player Stats")]
+	public float maxPlayerHealth = 500;
+	public float playerHealth;
+	public Slider healthSlider;
+	public int gold = 500;
+	public Text goldText;
 
 	//rb is a reference to the player's Rigidbody component
+	[HideInInspector]
 	public Rigidbody rb;
 	//controller is a reference to a specific controller
 	public XboxController controller;
 
+	[Space(20)]
+	[Header("Movement")]
 	//Moving
 	//moveSpeed is player's base speed
 	public float moveSpeed = 60;
@@ -28,9 +38,9 @@ public class PlayerController : MonoBehaviour {
 	public float jumpVelocity = 5;
 	//fallMultiplier is how fast falling is sped up
 	public float fallMultiplier = 2.5f;
-	//lowJumpMultiplier is how fast falling is sped up on smaller jumps
-	public float lowJumpMultiplier = 2;
 
+	[Space(20)]
+	[Header("Shooting")]
 	//Shooting
 	//bulletParent is a reference to the bullet parent transform
 	public Transform bulletParent;
@@ -38,20 +48,31 @@ public class PlayerController : MonoBehaviour {
 	public GameObject bulletPrefab;
 	//bulletSpawn is a reference to the bullet spawn transform
 	public Transform bulletSpawn;
+	//bulletDamage is how much damge enemies take when hit
+	public int bulletMaxDamage = 40;
+	public int bulletMinDamage = 15;
 	//bulletSpeed is how fast the bullet moves
 	public float bulletSpeed = 6;
-	//shootingTimerRight is a count down number for the right trigger
-	float shootingTimerRight;
-	//shootingTimerLeft is a count down number for the left trigger
-	float shootingTimerLeft;
+	//reload time between shots
+	public float reloadTime = 1;
 	//timeBetweenShots is the delay between bullets spawning
 	public float timeBetweenShots = 0.02f;
+	//reference to damage prefab
+	public GameObject damagePrefab;
+	//shooting layer
+	public LayerMask shotLayer;
+	bool canShoot = true;
+	//crosshair reference
+	public Transform crosshair;
 
 	//rotationHolder is used to hold the rotation of the player
+	[HideInInspector]
 	public Vector3 rotationHolder = Vector3.zero;
 
 	//build selection menu
 	//canvasReference is a reference to the player's canvas
+	[Space(20)]
+	[Header("Building")]
 	public GameObject canvasReference;
 
 	//BuildButton is a class for UI buttons
@@ -81,6 +102,7 @@ public class PlayerController : MonoBehaviour {
 	//bool check if released trigger button
 	bool triggerUp;
 	//bool check if currently building
+	[HideInInspector]
 	public bool isBuilding = false;
 	//bool check if we can open build menu
 	public static bool canOpenBuildMenu = true;
@@ -90,6 +112,9 @@ public class PlayerController : MonoBehaviour {
 	public enum state {NotBuilding, Selecting, Placing};
 	//playerState is a state object and is set to NotBuilding
 	public state playerState = state.NotBuilding;
+
+	[HideInInspector]
+	public Vector3 aimDirection;
 
 	//player index
 	[HideInInspector]
@@ -129,6 +154,8 @@ public class PlayerController : MonoBehaviour {
 		} else if (controller == XboxController.Second) {
 			playerID = 2;
 		}
+		playerHealth = maxPlayerHealth;
+		goldText.text = "Gold: " + gold.ToString ();
 	}
 
 	//--------------------------------------------------------------------------------------
@@ -154,11 +181,8 @@ public class PlayerController : MonoBehaviour {
 			rb.velocity = Vector3.up * jumpVelocity;
 		}
 		//if falling, fall faster, else if moving up and not pressing jump start falling
-		if (rb.velocity.y < 0) {
+		if (rb.velocity.y < 3f) {
 			rb.velocity += Vector3.up * Physics.gravity.y * (fallMultiplier - 1) * Time.deltaTime;
-		} else if (rb.velocity.y > 0 && !XCI.GetButton(XboxButton.A, controller)) {
-			rb.velocity = Vector3.zero;
-			rb.velocity += Vector3.up * Physics.gravity.y * (lowJumpMultiplier - 1) * Time.deltaTime;
 		}
 
 		//Open building menu
@@ -187,7 +211,7 @@ public class PlayerController : MonoBehaviour {
 		//look up and down
 		Vector3 lookVector = new Vector3 (-rotateAxisX, 0, 0);
 		rotationHolder += lookVector;
-		rotationHolder.x = Mathf.Clamp (rotationHolder.x, -26, 26);
+		rotationHolder.x = Mathf.Clamp (rotationHolder.x, -24, 26);
 		transform.GetChild (0).transform.localRotation = Quaternion.Euler(rotationHolder.x, transform.rotation.y, 0);
 	}
 
@@ -220,15 +244,37 @@ public class PlayerController : MonoBehaviour {
 	//		Void
 	//--------------------------------------------------------------------------------------
 	void FireGun() {
-		if (XCI.GetAxis (XboxAxis.RightTrigger, controller) > 0.1f) {
-			if (Time.time - shootingTimerRight > timeBetweenShots) {
-				GameObject GO = Instantiate (bulletPrefab, bulletSpawn.position, bulletSpawn.rotation) as GameObject;
-				GO.transform.SetParent (bulletParent);
-				GO.GetComponent<Rigidbody> ().AddForce (bulletSpawn.transform.forward * bulletSpeed, ForceMode.Impulse);
-				Destroy (GO, 3);
-				shootingTimerRight = Time.time;
-			}
+		if (XCI.GetAxis (XboxAxis.RightTrigger, controller) > 0.1f && canShoot) {
+			StartCoroutine (Shooting ());
 		}
+	}
+
+	IEnumerator Shooting() {
+		canShoot = false;
+		Ray ray = new Ray(crosshair.position, aimDirection);
+		Debug.DrawRay(crosshair.position, aimDirection * 50, Color.red, 3);
+		RaycastHit hit;
+		if (Physics.Raycast(ray, out hit, 50, shotLayer)) {
+			//spawn bullet
+			GameObject tempBullet = Instantiate (bulletPrefab, bulletParent);
+			tempBullet.transform.position = bulletSpawn.position;
+			tempBullet.transform.LookAt (hit.point);
+			yield return new WaitForSeconds(0.1f);
+			//hit enemy
+			if(hit.collider.gameObject.tag == "Enemy") {
+				int bulletDamage = Random.Range (bulletMinDamage, bulletMaxDamage);
+				GameObject GO = Instantiate (damagePrefab, hit.point, Quaternion.identity) as GameObject;
+				GO.GetComponent<DamageNumber> ().Initialise (bulletDamage, playerID);
+				hit.collider.gameObject.GetComponent<Enemy> ().TakeDamage (bulletDamage);
+			}
+		} else {
+			GameObject tempBullet = Instantiate (bulletPrefab, bulletParent);
+			tempBullet.transform.position = bulletSpawn.position;
+			tempBullet.transform.rotation = bulletSpawn.rotation;
+			yield return new WaitForSeconds(0.1f);
+		}
+		yield return new WaitForSeconds(reloadTime);
+		canShoot = true;
 	}
 
 	//--------------------------------------------------------------------------------------
@@ -306,13 +352,9 @@ public class PlayerController : MonoBehaviour {
 	//		Void
 	//--------------------------------------------------------------------------------------
 	void Placing() {
-		if (currentMenuOption == 1) {
-			Debug.Log("No Trap or Turret Yet!");
-			playerState = state.NotBuilding;
-			return;
-		} else if (!isBuilding) {
+		if (!isBuilding) {
 			isBuilding = true;
-			buildingManager.BuildObject (currentMenuOption, playerID);
+			buildingManager.OnBuildObject (currentMenuOption, playerID);
 			currentMenuOption = 0;
 		}
 
@@ -344,6 +386,9 @@ public class PlayerController : MonoBehaviour {
 	//--------------------------------------------------------------------------------------
 	void Update() {
 
+		aimDirection = bulletSpawn.forward;
+		aimDirection.y -= 0.112f;
+
 		PlayerMove ();
 
 		switch (playerState) {
@@ -373,9 +418,28 @@ public class PlayerController : MonoBehaviour {
 	//--------------------------------------------------------------------------------------
 	public void TakeDamage(int damage) {
 		playerHealth -= damage;
+		healthSlider.value = playerHealth / maxPlayerHealth;
 		if(playerHealth <= 0) {
 			Debug.Log (gameObject.name + " died, end game");
+			Cursor.visible = true;
 			SceneManager.LoadScene ("MainMenu");
 		}
+	}
+
+	//--------------------------------------------------------------------------------------
+	//	AddHealth()
+	// add health
+	//
+	// Param:
+	//		amount - how much health to add
+	// Return:
+	//		Void
+	//--------------------------------------------------------------------------------------
+	public void AddHealth(int amount) {
+		playerHealth += amount;
+		if(playerHealth >= maxPlayerHealth) {
+			playerHealth = maxPlayerHealth;
+		}
+		healthSlider.value = playerHealth / maxPlayerHealth;
 	}
 }

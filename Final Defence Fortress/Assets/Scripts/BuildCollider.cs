@@ -4,10 +4,16 @@ using UnityEngine;
 
 public class BuildCollider : MonoBehaviour {
 
+	//enum collider type
+	public enum ColliderTypes {EastCollider, WestCollider, NorthCollider, SouthCollider, WallColliderUp, StairColliderUp, StairColliderDown, HealthCollider}
+	public ColliderTypes colliderType;
+
 	//vector that stores size of a object
-	Vector3 sizeOfObject;
+	[HideInInspector]
+	public Vector3 sizeOfObject;
 	//reference to building parent transform
-	Transform buildingParentTransform;
+	[HideInInspector]
+	public Transform buildingParentTransform;
 
 	//--------------------------------------------------------------------------------------
 	//	Start()
@@ -23,107 +29,9 @@ public class BuildCollider : MonoBehaviour {
 		sizeOfObject = buildingParentTransform.GetComponent<Collider> ().bounds.size;
 	}
 
-	//--------------------------------------------------------------------------------------
-	//	OnTriggerEnter()
-	// If building set object enters trigger snap that object to the relavent position based
-	// on where the trigger is
-	//
-	// Param:
-	//		Collider other - reference to the object that entered trigger
-	// Return:
-	//		Void
-	//--------------------------------------------------------------------------------------
 	void OnTriggerEnter(Collider other) {
-		//snapping
-		//if floor object
-		if (other.tag == "Building" && !other.GetComponent<BuildObject>().isSnapped) {
-			float sizeX = sizeOfObject.x;
-			float sizeY = sizeOfObject.y;
-			float sizeZ = sizeOfObject.z;
-
-			BuildObject otherBuildObject = other.GetComponent<BuildObject> ();
-
-			switch(transform.tag) {
-			case "EastCollider":
-				if (otherBuildObject.objectType == BuildObject.enumObjectType.floor) {
-					other.transform.position = new Vector3 (buildingParentTransform.position.x + sizeX, buildingParentTransform.position.y, buildingParentTransform.position.z);
-					other.GetComponent<BuildObject> ().isSnapped = true;
-				}
-				if (otherBuildObject.objectType == BuildObject.enumObjectType.stair) {
-					other.transform.position = new Vector3 (buildingParentTransform.position.x + sizeX, buildingParentTransform.position.y + 3, buildingParentTransform.position.z);
-					other.transform.eulerAngles = new Vector3 (0, -90, 0);
-					other.GetComponent<BuildObject> ().isSnapped = true;
-				}
-				if (otherBuildObject.objectType == BuildObject.enumObjectType.wall) {
-					if (buildingParentTransform.GetChild(0).GetChild(1).GetChild(0).GetComponent<WallPoint>().hasWall == false) {
-						other.transform.position = buildingParentTransform.GetChild(0).GetChild(1).GetChild(0).transform.position;
-						other.transform.rotation = buildingParentTransform.GetChild(0).GetChild(1).GetChild(0).transform.rotation;
-						other.GetComponent<BuildObject> ().isSnapped = true;
-					}
-				}
-				break;
-			case "WestCollider":
-				if (otherBuildObject.objectType == BuildObject.enumObjectType.floor) {
-					other.transform.position = new Vector3 (buildingParentTransform.position.x - sizeX, buildingParentTransform.position.y, buildingParentTransform.position.z);
-					other.GetComponent<BuildObject> ().isSnapped = true;
-				}
-				if (otherBuildObject.objectType == BuildObject.enumObjectType.stair) {
-					other.transform.position = new Vector3 (buildingParentTransform.position.x + sizeX, buildingParentTransform.position.y + 3, buildingParentTransform.position.z);
-					other.transform.eulerAngles = new Vector3 (0, 90, 0);
-					other.GetComponent<BuildObject> ().isSnapped = true;
-				}
-				if (otherBuildObject.objectType == BuildObject.enumObjectType.wall) {
-					if (buildingParentTransform.GetChild(0).GetChild(1).GetChild(1).GetComponent<WallPoint>().hasWall == false) {
-						other.transform.position = buildingParentTransform.GetChild(0).GetChild(1).GetChild(1).transform.position;
-						other.transform.rotation = buildingParentTransform.GetChild(0).GetChild(1).GetChild(1).transform.rotation;
-						other.GetComponent<BuildObject> ().isSnapped = true;
-					}
-				}
-				break;
-			case "NorthCollider":
-				if (otherBuildObject.objectType == BuildObject.enumObjectType.floor) {
-					other.transform.position = new Vector3 (buildingParentTransform.position.x, buildingParentTransform.position.y, buildingParentTransform.position.z + sizeZ);
-					other.GetComponent<BuildObject> ().isSnapped = true;
-				}
-				if (otherBuildObject.objectType == BuildObject.enumObjectType.stair) {
-					other.transform.position = new Vector3 (buildingParentTransform.position.x + sizeX, buildingParentTransform.position.y + 3, buildingParentTransform.position.z);
-					other.transform.eulerAngles = new Vector3 (0, 180, 0);
-					other.GetComponent<BuildObject> ().isSnapped = true;
-				}
-				if (otherBuildObject.objectType == BuildObject.enumObjectType.wall) {
-					if (buildingParentTransform.GetChild(0).GetChild(1).GetChild(2).GetComponent<WallPoint>().hasWall == false) {
-						other.transform.position = buildingParentTransform.GetChild(0).GetChild(1).GetChild(2).transform.position;
-						other.transform.rotation = buildingParentTransform.GetChild(0).GetChild(1).GetChild(2).transform.rotation;
-						other.GetComponent<BuildObject> ().isSnapped = true;
-					}
-				}
-				break;
-			case "SouthCollider":
-				if (otherBuildObject.objectType == BuildObject.enumObjectType.floor) {
-					other.transform.position = new Vector3 (buildingParentTransform.position.x, buildingParentTransform.position.y, buildingParentTransform.position.z - sizeZ);
-					other.GetComponent<BuildObject> ().isSnapped = true;
-				}
-				if (otherBuildObject.objectType == BuildObject.enumObjectType.stair) {
-					other.transform.position = new Vector3 (buildingParentTransform.position.x + sizeX, buildingParentTransform.position.y + 3, buildingParentTransform.position.z);
-					other.transform.eulerAngles = new Vector3 (0, 0, 0);
-					other.GetComponent<BuildObject> ().isSnapped = true;
-				}
-				if (otherBuildObject.objectType == BuildObject.enumObjectType.wall) {
-					if (buildingParentTransform.GetChild(0).GetChild(1).GetChild(3).GetComponent<WallPoint>().hasWall == false) {
-						other.transform.position = buildingParentTransform.GetChild(0).GetChild(1).GetChild(3).transform.position;
-						other.transform.rotation = buildingParentTransform.GetChild(0).GetChild(1).GetChild(3).transform.rotation;
-						other.GetComponent<BuildObject> ().isSnapped = true;
-					}
-				}
-				break;
-			case "WallColliderUp":
-				if (otherBuildObject.objectType == BuildObject.enumObjectType.floor) {
-					other.transform.position = buildingParentTransform.GetChild(0).GetChild(1).transform.position;
-					other.transform.rotation = buildingParentTransform.GetChild(0).GetChild(1).transform.rotation;
-					other.GetComponent<BuildObject> ().isSnapped = true;
-				}
-				break;
-			}
+		if (other.tag == "Building" && !other.GetComponent<BuildObject>().isPlaced) {
+			other.GetComponent<BuildObject> ().SnapObject (gameObject);
 		}
 	}
 
@@ -138,7 +46,11 @@ public class BuildCollider : MonoBehaviour {
 	//--------------------------------------------------------------------------------------
 	void OnTriggerStay(Collider other) {
 		//disable collider if placed object is adjacent
-		if((other.tag == "Building" && other.GetComponent<BuildObject>().isPlaced && other.GetComponent<BuildObject>().objectType == BuildObject.enumObjectType.floor) || (other.tag == "Building" && other.GetComponent<BuildObject>().isPlaced && other.GetComponent<BuildObject>().objectType == BuildObject.enumObjectType.stair)) {
+		if((other.tag == "Building" && other.GetComponent<BuildObject>().isPlaced && other.GetComponent<BuildObject>().objectType == BuildObject.enumObjectType.floor) ||
+			(other.tag == "Building" && other.GetComponent<BuildObject>().isPlaced && other.GetComponent<BuildObject>().objectType == BuildObject.enumObjectType.stair) ||
+			(other.tag == "Building" && other.GetComponent<BuildObject>().isPlaced && other.GetComponent<BuildObject>().objectType == BuildObject.enumObjectType.spikeFloor) ||
+			(other.tag == "Building" && other.GetComponent<BuildObject>().isPlaced && other.GetComponent<BuildObject>().objectType == BuildObject.enumObjectType.spikeWall) ||
+			(other.tag == "Building" && other.GetComponent<BuildObject>().isPlaced && other.GetComponent<BuildObject>().objectType == BuildObject.enumObjectType.slowFloor)) {
 			gameObject.SetActive (false);
 		}
 	}

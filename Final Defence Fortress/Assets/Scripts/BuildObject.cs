@@ -9,7 +9,7 @@ public class BuildObject : MonoBehaviour {
 	public LayerMask layerMask;
 
 	//enum of building set object types
-	public enum enumObjectType {floor, wall, roof, trap, turret, stair};
+	public enum enumObjectType {floor, spikeFloor, slowFloor, wall, spikeWall, stair, healthpack};
 	//enum object of objectType
 	public enumObjectType objectType;
 
@@ -23,9 +23,10 @@ public class BuildObject : MonoBehaviour {
 	//check if object is snapped to another object
 	public bool isSnapped = false;
 	//refrences to PlayerLookAt transforms
-	Transform PlayerCameraLookAt;
-	Transform PlayerLookAt1;
-	Transform PlayerLookAt2;
+	Vector3 rayOrigin;
+	Vector3 rayDirection;
+	PlayerController player1;
+	PlayerController player2;
 
 	//index of player that instantiate this object
 	public int playerNumber = 0;
@@ -33,6 +34,9 @@ public class BuildObject : MonoBehaviour {
 	//Color of object when you can and cant place it
 	public Color canPlace;
 	public Color cantPlace;
+
+	public delegate void OnCloseItemMenu (int p_ID);
+	public static event OnCloseItemMenu onCloseItemMenu;
 
 	//--------------------------------------------------------------------------------------
 	//	OnEnable()
@@ -74,8 +78,8 @@ public class BuildObject : MonoBehaviour {
 	//		Void
 	//--------------------------------------------------------------------------------------
 	void Start() {
-		PlayerLookAt1 = GameObject.FindGameObjectWithTag ("Player1").transform.GetChild (0).GetChild(0).GetChild(0).transform;
-		PlayerLookAt2 = GameObject.FindGameObjectWithTag ("Player2").transform.GetChild (0).GetChild(0).GetChild(0).transform;
+		player1 = GameObject.FindGameObjectWithTag ("Player1").GetComponent<PlayerController>();
+		player2 = GameObject.FindGameObjectWithTag ("Player2").GetComponent<PlayerController> ();
 	}
 
 	//--------------------------------------------------------------------------------------
@@ -98,10 +102,17 @@ public class BuildObject : MonoBehaviour {
 					PlayerController player = GameObject.FindGameObjectWithTag ("Player1").GetComponent<PlayerController> ();
 					player.playerState = PlayerController.state.NotBuilding;
 					player.isBuilding = false;
+					if (onCloseItemMenu != null) {
+						Debug.Log ("run");
+						onCloseItemMenu (playerNumber);
+					}
 				} else if (playerNumber == 2) {
 					PlayerController player = GameObject.FindGameObjectWithTag ("Player2").GetComponent<PlayerController> ();
 					player.playerState = PlayerController.state.NotBuilding;
 					player.isBuilding = false;
+					if (onCloseItemMenu != null) {
+						onCloseItemMenu (playerNumber);
+					}
 				}
 			}
 			else {
@@ -155,15 +166,17 @@ public class BuildObject : MonoBehaviour {
 	void Update() {
 		if (playerNumber != 0) {
 			if (playerNumber == 1) {
-				PlayerCameraLookAt = PlayerLookAt1;
+				rayOrigin = player1.crosshair.position;
+				rayDirection = player1.aimDirection;
 			} else if (playerNumber == 2) {
-				PlayerCameraLookAt = PlayerLookAt2;
+				rayOrigin = player2.crosshair.position;
+				rayDirection = player2.aimDirection;
 			}
 
 			//while not placed follow mouse position
 			if(!isPlaced && !isSnapped) {
 				float rayLength = 50;
-				Ray ray = new Ray(PlayerCameraLookAt.position, PlayerCameraLookAt.forward);
+				Ray ray = new Ray(rayOrigin, rayDirection);
 				Debug.DrawRay(ray.origin, ray.direction * rayLength, Color.yellow);
 				RaycastHit hit;
 				if (Physics.Raycast(ray, out hit, rayLength, layerMask)) {
@@ -184,13 +197,13 @@ public class BuildObject : MonoBehaviour {
 
 			//release snapping
 			if (isSnapped && !isPlaced) {
-				float rayLength = 10;
-				Ray ray = new Ray(PlayerCameraLookAt.position, PlayerCameraLookAt.forward);
+				float rayLength = 50;
+				Ray ray = new Ray(rayOrigin, rayDirection);
 				Debug.DrawRay(ray.origin, ray.direction * rayLength, Color.yellow);
 				RaycastHit hit;
-				if (Physics.Raycast(ray, out hit, rayLength, layerMask)) {
+				if (Physics.Raycast(ray, out hit, rayLength)) {
 					//if look position not == to object position un-snap
-					if (Vector3.Distance(hit.point,transform.position) > 7f) {
+					if (Vector3.Distance(hit.point,transform.position) > 6.5f) {
 						isSnapped = false;
 					}
 				}
@@ -202,6 +215,9 @@ public class BuildObject : MonoBehaviour {
 					transform.GetChild (1).GetChild(0).GetComponent<Renderer> ().material.color = canPlace;
 					transform.GetChild (1).GetChild(1).GetComponent<Renderer> ().material.color = canPlace;
 					transform.GetChild (1).GetChild(2).GetComponent<Renderer> ().material.color = canPlace;
+				} else if (objectType == enumObjectType.spikeFloor || objectType == enumObjectType.spikeWall) {
+					transform.GetChild (1).GetChild(0).GetComponent<Renderer> ().material.color = canPlace;
+					transform.GetChild (1).GetChild(1).GetComponent<Renderer> ().material.color = canPlace;
 				} else {
 					transform.GetChild (1).GetComponent<Renderer> ().material.color = canPlace;
 				}
@@ -210,10 +226,148 @@ public class BuildObject : MonoBehaviour {
 					transform.GetChild (1).GetChild(0).GetComponent<Renderer> ().material.color = cantPlace;
 					transform.GetChild (1).GetChild(1).GetComponent<Renderer> ().material.color = cantPlace;
 					transform.GetChild (1).GetChild(2).GetComponent<Renderer> ().material.color = cantPlace;
+				} else if (objectType == enumObjectType.spikeFloor || objectType == enumObjectType.spikeWall) {
+					transform.GetChild (1).GetChild(0).GetComponent<Renderer> ().material.color = cantPlace;
+					transform.GetChild (1).GetChild(1).GetComponent<Renderer> ().material.color = cantPlace;
 				} else {
 					transform.GetChild (1).GetComponent<Renderer> ().material.color = cantPlace;
 				}
 			}
+		}
+	}
+
+	public void SnapObject(GameObject snapCollider) {
+		BuildCollider buildCollider = snapCollider.GetComponent<BuildCollider> ();
+		Transform snapToParent = buildCollider.buildingParentTransform;
+		float sizeX = buildCollider.sizeOfObject.x;
+		float sizeY = buildCollider.sizeOfObject.y;
+		float sizeZ = buildCollider.sizeOfObject.z;
+
+		switch(buildCollider.colliderType) {
+		case BuildCollider.ColliderTypes.EastCollider:
+			if (objectType == enumObjectType.floor) {
+				transform.position = new Vector3 (snapToParent.position.x + sizeX, snapToParent.position.y, snapToParent.position.z);
+				isSnapped = true;
+			}
+			if (objectType == enumObjectType.stair) {
+				if (snapToParent.GetChild(0).GetChild(2).GetChild(0).GetComponent<WallPoint>().hasWall == false) {
+					transform.position = snapToParent.GetChild(0).GetChild(2).GetChild(0).transform.position;
+					transform.rotation = snapToParent.GetChild(0).GetChild(2).GetChild(0).transform.rotation;
+					isSnapped = true;
+				}
+			}
+			if (objectType == enumObjectType.wall) {
+				if (snapToParent.GetChild(0).GetChild(1).GetChild(0).GetComponent<WallPoint>().hasWall == false) {
+					transform.position = snapToParent.GetChild(0).GetChild(1).GetChild(0).transform.position;
+					transform.rotation = snapToParent.GetChild(0).GetChild(1).GetChild(0).transform.rotation;
+					isSnapped = true;
+				}
+			}
+			break;
+		case BuildCollider.ColliderTypes.WestCollider:
+			if (objectType == enumObjectType.floor) {
+				transform.position = new Vector3 (snapToParent.position.x - sizeX, snapToParent.position.y, snapToParent.position.z);
+				isSnapped = true;
+			}
+			if (objectType == enumObjectType.stair) {
+				if (snapToParent.GetChild(0).GetChild(2).GetChild(1).GetComponent<WallPoint>().hasWall == false) {
+					transform.position = snapToParent.GetChild(0).GetChild(2).GetChild(1).transform.position;
+					transform.rotation = snapToParent.GetChild(0).GetChild(2).GetChild(1).transform.rotation;
+					isSnapped = true;
+				}
+			}
+			if (objectType == enumObjectType.wall) {
+				if (snapToParent.GetChild(0).GetChild(1).GetChild(1).GetComponent<WallPoint>().hasWall == false) {
+					transform.position = snapToParent.GetChild(0).GetChild(1).GetChild(1).transform.position;
+					transform.rotation = snapToParent.GetChild(0).GetChild(1).GetChild(1).transform.rotation;
+					isSnapped = true;
+				}
+			}
+			break;
+		case BuildCollider.ColliderTypes.NorthCollider:
+			if (objectType == enumObjectType.floor) {
+				transform.position = new Vector3 (snapToParent.position.x, snapToParent.position.y, snapToParent.position.z + sizeZ);
+				isSnapped = true;
+			}
+			if (objectType == enumObjectType.stair) {
+				if (snapToParent.GetChild(0).GetChild(2).GetChild(2).GetComponent<WallPoint>().hasWall == false) {
+					transform.position = snapToParent.GetChild(0).GetChild(2).GetChild(2).transform.position;
+					transform.rotation = snapToParent.GetChild(0).GetChild(2).GetChild(2).transform.rotation;
+					isSnapped = true;
+				}
+			}
+			if (objectType == enumObjectType.wall) {
+				if (snapToParent.GetChild(0).GetChild(1).GetChild(2).GetComponent<WallPoint>().hasWall == false) {
+					transform.position = snapToParent.GetChild(0).GetChild(1).GetChild(2).transform.position;
+					transform.rotation = snapToParent.GetChild(0).GetChild(1).GetChild(2).transform.rotation;
+					isSnapped = true;
+				}
+			}
+			break;
+		case BuildCollider.ColliderTypes.SouthCollider:
+			if (objectType == enumObjectType.floor) {
+				transform.position = new Vector3 (snapToParent.position.x, snapToParent.position.y, snapToParent.position.z - sizeZ);
+				isSnapped = true;
+			}
+			if (objectType == enumObjectType.stair) {
+				if (snapToParent.GetChild(0).GetChild(2).GetChild(3).GetComponent<WallPoint>().hasWall == false) {
+					transform.position = snapToParent.GetChild(0).GetChild(2).GetChild(3).transform.position;
+					transform.rotation = snapToParent.GetChild(0).GetChild(2).GetChild(3).transform.rotation;
+					isSnapped = true;
+				}
+			}
+			if (objectType == enumObjectType.wall) {
+				if (snapToParent.GetChild(0).GetChild(1).GetChild(3).GetComponent<WallPoint>().hasWall == false) {
+					transform.position = snapToParent.GetChild(0).GetChild(1).GetChild(3).transform.position;
+					transform.rotation = snapToParent.GetChild(0).GetChild(1).GetChild(3).transform.rotation;
+					isSnapped = true;
+				}
+			}
+			break;
+		case BuildCollider.ColliderTypes.WallColliderUp:
+			if (objectType == enumObjectType.floor) {
+				transform.position = snapToParent.GetChild(0).GetChild(1).transform.position;
+				transform.rotation = snapToParent.GetChild(0).GetChild(1).transform.rotation;
+				isSnapped = true;
+			}
+			if (objectType == enumObjectType.spikeWall) {
+				transform.rotation = snapToParent.GetChild(0).GetChild(2).transform.rotation;
+				transform.position = new Vector3 (snapToParent.position.x, snapToParent.position.y - 2f, snapToParent.position.z);
+				isSnapped = true;
+			}
+			break;
+		case BuildCollider.ColliderTypes.StairColliderUp:
+			if (objectType == enumObjectType.floor) {
+				if (snapToParent.GetChild(0).GetChild(4).GetComponent<WallPoint>().hasWall == false) {
+					transform.position = snapToParent.GetChild(0).GetChild(4).transform.position;
+					transform.rotation = snapToParent.GetChild(0).GetChild(4).transform.rotation;
+					isSnapped = true;
+				}
+			}
+			break;
+		case BuildCollider.ColliderTypes.StairColliderDown:
+			if (objectType == enumObjectType.floor) {
+				if (snapToParent.GetChild(0).GetChild(5).GetComponent<WallPoint>().hasWall == false) {
+					transform.position = snapToParent.GetChild(0).GetChild(5).transform.position;
+					transform.rotation = snapToParent.GetChild(0).GetChild(5).transform.rotation;
+					isSnapped = true;
+				}
+			}
+			break;
+		case BuildCollider.ColliderTypes.HealthCollider:
+			if (objectType == enumObjectType.spikeFloor) {
+				transform.position = new Vector3 (snapToParent.position.x, snapToParent.position.y + 0.1f, snapToParent.position.z);
+				isSnapped = true;
+			}
+			if (objectType == enumObjectType.slowFloor) {
+				transform.position = new Vector3 (snapToParent.position.x, snapToParent.position.y + 0.1f, snapToParent.position.z);
+				isSnapped = true;
+			}
+			if (objectType == enumObjectType.healthpack) {
+				transform.position = new Vector3 (snapToParent.position.x, snapToParent.position.y + 0.5f, snapToParent.position.z);
+				isSnapped = true;
+			}
+			break;
 		}
 	}
 }

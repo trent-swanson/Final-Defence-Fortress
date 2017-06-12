@@ -4,22 +4,17 @@ using UnityEngine;
 
 public class Bullet : MonoBehaviour {
 
-	//bullet damage value
-	public int damage;
+	public float bulletSpeed = 1;
 
-	//--------------------------------------------------------------------------------------
-	//	OnTriggerEnter()
-	// If hit enemy, enemy takes daname, destroy this bullet
-	//
-	// Param:
-	//		Collider other - reference to object that entered trigger
-	// Return:
-	//		Void
-	//--------------------------------------------------------------------------------------
-	void OnTriggerEnter(Collider other) {
-		if (other.tag == "Enemy") {
-			other.GetComponent<Enemy> ().TakeDamage ();
-		}
-		Destroy (this.gameObject);
+	void Start() {
+		Destroy (gameObject, 1);
+	}
+
+	void FixedUpdate() {
+		transform.position += transform.forward * bulletSpeed;
+	}
+
+	void OnCollisionEnter() {
+		Destroy (gameObject);
 	}
 }
